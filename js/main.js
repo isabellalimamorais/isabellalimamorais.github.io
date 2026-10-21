@@ -25,6 +25,9 @@ document.addEventListener('click', e => {
   if (falar) { const m = meds[+falar.dataset.say]; speak(m.n + ', às ' + m.t + '.'); }
 
   const tomar = e.target.closest('[data-take]');
+  const apagar = e.target.closest('[data-del]');
+  if (apagar) apagarMed(+apagar.dataset.del);
+
   if (tomar) { marcarTomado(meds[+tomar.dataset.take]); toast('Anotado!'); }
 });
 
@@ -45,6 +48,13 @@ $('#sheet').onclick = e => { if (e.target.id === 'sheet') closeSheet(); };
 
 // ----- Remédios -----
 $('#btn-test-alarm').onclick = tocarAlarme;
+
+$('#btn-clear-meds').onclick = apagarTodosMeds;
+
+// ----- Limpar dados (Família) -----
+$('#btn-reset-day').onclick = zerarStatus;
+$('#btn-clear-logs').onclick = limparNotificacoes;
+$('#btn-clear-photos').onclick = apagarFotos;
 
 // ----- Bula -----
 $('#leaflet-file').onchange = e => { const f = e.target.files[0]; if (f) mostrarBula(URL.createObjectURL(f)); };

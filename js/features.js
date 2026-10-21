@@ -117,6 +117,7 @@ let timerAlarme;
 
 function tocarAlarme() {
   const m = proximoMed() || meds[0];
+  if (!m) return toast('Cadastre um remédio para testar o alarme');
   const chamar = () => { beep(); speak(`${userName()}, agora é hora do medicamento. ${m.n}. ${m.how}`); };
 
   paint($('#alarm-screen'), `
@@ -194,4 +195,64 @@ function enviarFerida() {
     item.resposta = 'Recebi suas fotos e vou avaliar. Se piorar, procure atendimento.';
     render();
   }, 3500);
+}
+
+
+/* ---------- Apagar e limpar ---------- */
+// Pergunta antes de apagar. fazer() roda só se a pessoa confirmar.
+function confirmar(titulo, texto, rotulo, fazer) {
+  openSheet(`
+    <h3 class="sheet__title sheet__title--danger">${icon('trash-2')} ${esc(titulo)}</h3>
+    <p>${texto}</p>
+    <div class="btn-row">
+      <button class="btn btn--danger" id="btn-confirm-yes">${esc(rotulo)}</button>
+      <button class="btn btn--soft" id="btn-sheet-close">Cancelar</button>
+    </div>`);
+  $('#btn-sheet-close').onclick = closeSheet;
+  $('#btn-confirm-yes').onclick = () => { closeSheet(); fazer(); };
+}
+
+function apagarMed(i) {
+  const m = meds[i];
+  if (!m) return;
+  confirmar('Apagar remédio', `Apagar <b>${esc(m.n)}</b> (${m.t}) da lista?`, 'Apagar', () => {
+    meds.splice(i, 1);
+    render();
+    toast('Remédio apagado');
+  });
+}
+
+function apagarTodosMeds() {
+  if (!meds.length) return toast('Não há remédios na lista');
+  confirmar('Apagar todos', 'Apagar <b>todos</b> os remédios da lista?', 'Apagar todos', () => {
+    meds.length = 0;
+    render();
+    toast('Lista limpa');
+  });
+}
+
+// Desmarca os remédios de hoje (volta tudo para "não tomado")
+function zerarStatus() {
+  confirmar('Zerar o dia', 'Desmarcar todos os remédios como não tomados e limpar o que foi registrado hoje?', 'Zerar', () => {
+    meds.forEach(m => { m.d = 0; m.f = 0; m.at = ''; });
+    logs.length = 0;
+    render();
+    toast('Status do dia zerado');
+  });
+}
+
+function limparNotificacoes() {
+  if (!logs.length) return toast('Não há notificações');
+  logs.length = 0;
+  render();
+  toast('Notificações limpas');
+}
+
+function apagarFotos() {
+  if (!feridas.length) return toast('Não há fotos enviadas');
+  confirmar('Apagar fotos', 'Apagar todas as fotos de feridas e o acompanhamento?', 'Apagar fotos', () => {
+    feridas.length = 0;
+    render();
+    toast('Fotos apagadas');
+  });
 }

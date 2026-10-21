@@ -38,8 +38,9 @@ function render() {
   $('#sos-sub').textContent = 'Avisa ' + (perfil.rn || 'seu responsável') + ' agora';
 
   // Anel do dia
+  const frac = meds.length ? tomados / meds.length : 0;
   $('#ring-num').textContent = `${tomados}/${meds.length}`;
-  $('#ring-bar').style.strokeDashoffset = 502.65 * (1 - tomados / meds.length);
+  $('#ring-bar').style.strokeDashoffset = 502.65 * (1 - frac);
 
   // Cartão do próximo remédio
   $('#next-card').innerHTML = prox
@@ -49,6 +50,11 @@ function render() {
          <span class="next__when"><b>${prox.t}</b> · ${quando(prox.t)}</span>
        </div>
        <button class="icon-btn" data-say="${meds.indexOf(prox)}" aria-label="Ouvir o nome">${icon('volume-2')}</button>`
+    : !meds.length
+    ? `<div class="next__body">
+         <span class="next__name">Nenhum remédio cadastrado</span>
+         <span class="next__when">Toque em “Remédio” para adicionar.</span>
+       </div>`
     : `<span class="next__party">${icon('party-popper', 'ic-xl')}</span>
        <div class="next__body">
          <span class="next__name">Tudo certo por hoje</span>
@@ -56,7 +62,9 @@ function render() {
        </div>`;
 
   // Lista de remédios
-  $('#med-list').innerHTML = ordenados.map(([m, i]) => `
+  $('#med-list').innerHTML = !meds.length
+    ? '<p class="muted" style="padding:14px 0">Nenhum remédio na lista. Toque em “Remédio” no alto para adicionar.</p>'
+    : ordenados.map(([m, i]) => `
     <div class="row">
       <span class="row__time">${m.t}</span>
       <span class="row__name">${esc(m.n)}</span>
@@ -64,14 +72,15 @@ function render() {
       ${m.d
         ? `<span class="status">${icon('circle-check')} Tomado</span>`
         : `<button class="btn btn--primary btn--sm" data-take="${i}">${icon('check')} Tomei</button>`}
+      <button class="icon-btn icon-btn--sm" data-del="${i}" aria-label="Apagar ${esc(m.n)}">${icon('trash-2')}</button>
     </div>`).join('');
 
   // Área da família
   $('#family-name').textContent = perfil.rn || 'Responsável';
   $('#consent-label').textContent = userName() + ' autorizou o acompanhamento';
   $('#family-body').hidden = !$('#consent-toggle').checked;
-  $('#adherence').textContent = Math.round(tomados / meds.length * 100) + '%';
-  $('#adherence-bar').style.width = (tomados / meds.length * 100) + '%';
+  $('#adherence').textContent = Math.round(frac * 100) + '%';
+  $('#adherence-bar').style.width = (frac * 100) + '%';
 
   $('#today-status').innerHTML = ordenados.map(([m]) => `
     <div class="row">
